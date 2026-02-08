@@ -1,0 +1,996 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arena Legends - 即时制炉石传说</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* 导航 */
+        .nav {
+            background: rgba(0,0,0,0.3);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            background: linear-gradient(90deg, #f39c12, #e74c3c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .nav-links {
+            display: flex;
+            gap: 30px;
+        }
+        
+        .nav-links a {
+            color: #fff;
+            text-decoration: none;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        
+        .nav-links a:hover {
+            opacity: 1;
+        }
+        
+        /* 英雄选择 */
+        .hero-section {
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .hero-section h1 {
+            font-size: 3rem;
+            margin-bottom: 20px;
+            background: linear-gradient(90deg, #f39c12, #e74c3c, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        
+        .hero-section p {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            max-width: 600px;
+            margin: 0 auto 40px;
+        }
+        
+        .heroes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .hero-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        
+        .hero-card:hover {
+            transform: translateY(-5px);
+            border-color: #f39c12;
+            background: rgba(255,255,255,0.15);
+        }
+        
+        .hero-icon {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+        }
+        
+        .hero-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .hero-desc {
+            font-size: 0.85rem;
+            opacity: 0.7;
+        }
+        
+        /* 职业颜色 */
+        .warrior .hero-icon { background: linear-gradient(135deg, #c0392b, #e74c3c); }
+        .mage .hero-icon { background: linear-gradient(135deg, #2980b9, #3498db); }
+        .hunter .hero-icon { background: linear-gradient(135deg, #27ae60, #2ecc71); }
+        .priest .hero-icon { background: linear-gradient(135deg, #ecf0f1, #bdc3c7); color: #333; }
+        .rogue .hero-icon { background: linear-gradient(135deg, #f39c12, #f1c40f); color: #333; }
+        .shaman .hero-icon { background: linear-gradient(135deg, #16a085, #1abc9c); }
+        .warlock .hero-icon { background: linear-gradient(135deg, #8e44ad, #9b59b6); }
+        .paladin .hero-icon { background: linear-gradient(135deg, #f39c12, #f1c40f); color: #333; }
+        .druid .hero-icon { background: linear-gradient(135deg, #d35400, #e67e22); }
+        .void .hero-icon { background: linear-gradient(135deg, #2c3e50, #34495e); border: 2px solid #9b59b6; }
+        
+        /* 战场预览 */
+        .battlefield-preview {
+            padding: 60px 20px;
+            background: linear-gradient(180deg, transparent, rgba(0,0,0,0.3));
+        }
+        
+        .battlefield-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            position: relative;
+        }
+        
+        .battlefield {
+            background: linear-gradient(180deg, 
+                #2c3e50 0%, 
+                #34495e 30%, 
+                #2ecc71 50%, 
+                #27ae60 80%, 
+                #1e8449 100%);
+            border-radius: 20px;
+            padding: 30px;
+            position: relative;
+            min-height: 400px;
+        }
+        
+        .lane {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .lane:last-child {
+            margin-bottom: 0;
+        }
+        
+        .lane-zone {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 40px 20px;
+            text-align: center;
+            border: 2px dashed rgba(255,255,255,0.2);
+            transition: all 0.3s;
+        }
+        
+        .lane-zone:hover {
+            background: rgba(255,255,255,0.15);
+            border-color: #f39c12;
+        }
+        
+        .lane-zone .label {
+            font-size: 0.8rem;
+            opacity: 0.6;
+            margin-bottom: 5px;
+        }
+        
+        .lane-zone .drop-hint {
+            font-size: 1.5rem;
+            opacity: 0.3;
+        }
+        
+        /* 随从展示 */
+        .minion-demo {
+            display: inline-block;
+            background: linear-gradient(135deg, #c0392b, #e74c3c);
+            border-radius: 10px;
+            padding: 10px 15px;
+            margin: 5px;
+            position: relative;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        .minion-demo::before {
+            content: '⚔️';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            font-size: 1.2rem;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* 费用显示 */
+        .mana-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0,0,0,0.5);
+            padding: 15px 25px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .mana-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+        
+        .mana-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        /* 手牌区 */
+        .hand-area {
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .hand-label {
+            margin-bottom: 15px;
+            opacity: 0.7;
+        }
+        
+        .hand-cards {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .card-preview {
+            width: 100px;
+            height: 140px;
+            background: linear-gradient(180deg, #2c3e50, #34495e);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            transition: transform 0.2s;
+            border: 2px solid #555;
+        }
+        
+        .card-preview:hover {
+            transform: translateY(-20px) scale(1.1);
+            border-color: #f39c12;
+        }
+        
+        .card-cost {
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            width: 25px;
+            height: 25px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+        
+        .card-name {
+            font-size: 0.7rem;
+            margin-top: 5px;
+            text-align: center;
+        }
+        
+        .card-art {
+            font-size: 2rem;
+            margin: 10px 0;
+        }
+        
+        /* 卡牌设计器 */
+        .card-designer {
+            padding: 60px 20px;
+            background: #1a1a2e;
+        }
+        
+        .designer-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .designer-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .designer-section h2 {
+            margin-bottom: 20px;
+            color: #f39c12;
+        }
+        
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            opacity: 0.8;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+        
+        /* 卡牌预览 */
+        .card-preview-large {
+            width: 200px;
+            height: 280px;
+            background: linear-gradient(180deg, #2c3e50, #34495e);
+            border-radius: 15px;
+            padding: 10px;
+            position: relative;
+            margin: 20px auto;
+            border: 3px solid #555;
+        }
+        
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        
+        .card-cost-large {
+            width: 35px;
+            height: 35px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .card-name-large {
+            font-weight: bold;
+            font-size: 0.9rem;
+            text-align: center;
+            flex: 1;
+            padding: 0 10px;
+        }
+        
+        .card-art-large {
+            height: 100px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        
+        .card-stats {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            bottom: 40px;
+            left: 10px;
+            right: 10px;
+        }
+        
+        .stat {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        .stat-attack {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+        }
+        
+        .stat-health {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+        }
+        
+        .card-desc-large {
+            position: absolute;
+            bottom: 10px;
+            left: 10px;
+            right: 10px;
+            font-size: 0.7rem;
+            text-align: center;
+            opacity: 0.8;
+        }
+        
+        /* 关键词标签 */
+        .keywords {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        
+        .keyword-tag {
+            padding: 4px 10px;
+            background: rgba(243, 156, 18, 0.3);
+            border: 1px solid #f39c12;
+            border-radius: 15px;
+            font-size: 0.7rem;
+        }
+        
+        /* 特性标签 */
+        .trait-tag {
+            padding: 4px 10px;
+            background: rgba(155, 89, 182, 0.3);
+            border: 1px solid #9b59b6;
+            border-radius: 15px;
+            font-size: 0.7rem;
+        }
+        
+        /* 视频介绍 */
+        .video-section {
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .video-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(0,0,0,0.3);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        
+        .video-placeholder {
+            aspect-ratio: 16/9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            background: linear-gradient(135deg, #1a1a2e, #16213e);
+        }
+        
+        .video-placeholder::after {
+            content: '🎮';
+        }
+        
+        /* CTA按钮 */
+        .cta-section {
+            padding: 80px 20px;
+            text-align: center;
+        }
+        
+        .cta-button {
+            display: inline-block;
+            padding: 20px 50px;
+            background: linear-gradient(90deg, #f39c12, #e74c3c);
+            border-radius: 30px;
+            color: #fff;
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.3);
+        }
+        
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(243, 156, 18, 0.5);
+        }
+        
+        /* 页脚 */
+        footer {
+            padding: 40px 20px;
+            text-align: center;
+            opacity: 0.6;
+            font-size: 0.9rem;
+        }
+        
+        /* 动画 */
+        @keyframes pulse {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; }
+        }
+        
+        .live-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background: #e74c3c;
+            border-radius: 50%;
+            animation: blink 1s infinite;
+        }
+        
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航 -->
+    <nav class="nav">
+        <div class="logo">⚔️ Arena Legends</div>
+        <div class="nav-links">
+            <a href="#heroes">英雄</a>
+            <a href="#battlefield">战场</a>
+            <a href="#cards">卡牌</a>
+            <a href="#designer">设计</a>
+        </div>
+    </nav>
+    
+    <!-- 英雄选择 -->
+    <section class="hero-section" id="heroes">
+        <h1>⚔️ Arena Legends</h1>
+        <p>即时制炉石传说 · 炉石的卡牌深度 + 皇室战争的实时策略</p>
+        
+        <div class="heroes-grid">
+            <div class="hero-card warrior">
+                <div class="hero-icon">⚔️</div>
+                <div class="hero-name">战士</div>
+                <div class="hero-desc">冲锋打击</div>
+            </div>
+            <div class="hero-card mage">
+                <div class="hero-icon">🔥</div>
+                <div class="hero-name">法师</div>
+                <div class="hero-desc">火焰箭</div>
+            </div>
+            <div class="hero-card hunter">
+                <div class="hero-icon">🏹</div>
+                <div class="hero-name">猎人</div>
+                <div class="hero-desc">稳固射击</div>
+            </div>
+            <div class="hero-card priest">
+                <div class="hero-icon">✨</div>
+                <div class="hero-name">牧师</div>
+                <div class="hero-desc">次级治疗</div>
+            </div>
+            <div class="hero-card rogue">
+                <div class="hero-icon">🗡️</div>
+                <div class="hero-name">潜行者</div>
+                <div class="hero-desc">毒刃</div>
+            </div>
+            <div class="hero-card shaman">
+                <div class="hero-icon">⚡</div>
+                <div class="hero-name">萨满</div>
+                <div class="hero-desc">石化武器</div>
+            </div>
+            <div class="hero-card warlock">
+                <div class="hero-icon">💀</div>
+                <div class="hero-name">术士</div>
+                <div class="hero-desc">生命分流</div>
+            </div>
+            <div class="hero-card paladin">
+                <div class="hero-icon">🛡️</div>
+                <div class="hero-name">圣骑士</div>
+                <div class="hero-desc">援军</div>
+            </div>
+            <div class="hero-card druid">
+                <div class="hero-icon">🌳</div>
+                <div class="hero-name">德鲁伊</div>
+                <div class="hero-desc">月火术</div>
+            </div>
+            <div class="hero-card void">
+                <div class="hero-icon">🔮</div>
+                <div class="hero-name">虚空</div>
+                <div class="hero-desc">侵蚀</div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 战场预览 -->
+    <section class="battlefield-preview" id="battlefield">
+        <div class="battlefield-container">
+            <h2 style="text-align: center; margin-bottom: 30px;">🎮 实时战场预览</h2>
+            
+            <div class="battlefield">
+                <!-- 圣水显示 -->
+                <div class="mana-display">
+                    <div class="mana-icon">💎</div>
+                    <div class="mana-text">7/10</div>
+                    <div style="margin-left: 10px; opacity: 0.7;">圣水/秒 +1</div>
+                </div>
+                
+                <!-- 敌方区域 -->
+                <div style="text-align: center; opacity: 0.5; margin-bottom: 20px;">
+                    😈 敌方战场
+                </div>
+                
+                <div class="lane">
+                    <div class="lane-zone">
+                        <div class="label">后排区</div>
+                        <div class="drop-hint">🎯</div>
+                    </div>
+                    <div class="lane-zone">
+                        <div class="label">中排区</div>
+                        <div class="drop-hint">🎯</div>
+                    </div>
+                    <div class="lane-zone">
+                        <div class="label">前排区</div>
+                        <div class="drop-hint">🎯</div>
+                    </div>
+                </div>
+                
+                <div class="lane">
+                    <div class="lane-zone">
+                        <div class="label">远程区</div>
+                        <div class="drop-hint">🎯</div>
+                    </div>
+                    <div class="lane-zone">
+                        <div class="label">中央</div>
+                        <div class="drop-hint">🎯</div>
+                    </div>
+                    <div class="lane-zone">
+                        <div class="label">冲锋区</div>
+                        <div class="drop-hint">🎯</div>
+                    </div>
+                </div>
+                
+                <!-- 我方随从 -->
+                <div style="text-align: center; margin: 20px 0;">
+                    <span class="minion-demo">🔥 火元素</span>
+                    <span class="minion-demo">🛡️ 冰霜骑士</span>
+                    <span class="minion-demo">🏹 精灵弓手</span>
+                </div>
+                
+                <!-- 我方区域 -->
+                <div class="lane">
+                    <div class="lane-zone">
+                        <div class="label">辅助区</div>
+                        <div class="drop-hint">🪄</div>
+                    </div>
+                    <div class="lane-zone">
+                        <div class="label">坦克区</div>
+                        <div class="drop-hint">🪄</div>
+                    </div>
+                    <div class="lane-zone">
+                        <div class="label">战士区</div>
+                        <div class="drop-hint">🪄</div>
+                    </div>
+                </div>
+                
+                <div class="hand-area">
+                    <div class="hand-label">🎴 拖拽卡牌到战场</div>
+                    <div class="hand-cards">
+                        <div class="card-preview">
+                            <div class="card-cost">3</div>
+                            <div class="card-art">🐺</div>
+                            <div class="card-name">狼骑兵</div>
+                        </div>
+                        <div class="card-preview">
+                            <div class="card-cost">4</div>
+                            <div class="card-art">⚡</div>
+                            <div class="card-name">闪电箭</div>
+                        </div>
+                        <div class="card-preview">
+                            <div class="card-cost">5</div>
+                            <div class="card-art">🐉</div>
+                            <div class="card-name">火龙</div>
+                        </div>
+                        <div class="card-preview">
+                            <div class="card-cost">2</div>
+                            <div class="card-art">💚</div>
+                            <div class="card-name">治疗</div>
+                        </div>
+                        <div class="card-preview">
+                            <div class="card-cost">6</div>
+                            <div class="card-art">👹</div>
+                            <div class="card-name">深渊领主</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div style="text-align: center; opacity: 0.5; margin-top: 20px;">
+                    😇 我方战场
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 卡牌设计器 -->
+    <section class="card-designer" id="designer">
+        <div class="designer-container">
+            <h2 style="text-align: center; margin-bottom: 10px;">✏️ 卡牌设计器</h2>
+            <p style="text-align: center; opacity: 0.7; margin-bottom: 40px;">设计你自己的卡牌</p>
+            
+            <div class="designer-section">
+                <h2>📝 基础信息</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>卡牌名称</label>
+                        <input type="text" id="cardName" placeholder="输入卡牌名称" value="火焰精灵">
+                    </div>
+                    <div class="form-group">
+                        <label>费用</label>
+                        <input type="number" id="cardCost" placeholder="1-10" value="4">
+                    </div>
+                    <div class="form-group">
+                        <label>攻击</label>
+                        <input type="number" id="cardAttack" placeholder="0-20" value="4">
+                    </div>
+                    <div class="form-group">
+                        <label>生命</label>
+                        <input type="number" id="cardHealth" placeholder="1-50" value="5">
+                    </div>
+                    <div class="form-group">
+                        <label>类型</label>
+                        <select id="cardType">
+                            <option value="minion">随从</option>
+                            <option value="spell">法术</option>
+                            <option value="weapon">武器</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>职业</label>
+                        <select id="cardClass">
+                            <option value="neutral">中立</option>
+                            <option value="warrior">战士</option>
+                            <option value="mage">法师</option>
+                            <option value="hunter">猎人</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="designer-section">
+                <h2>💫 关键词</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="keywordCharge"> 冲锋 (Charge)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="keywordTaunt"> 嘲讽 (Taunt)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="keywordRush"> 突袭 (Rush)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="keywordDivine"> 圣盾 (Divine Shield)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="keywordPoison"> 剧毒 (Poisonous)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 10px;">
+                            <input type="checkbox" id="keywordWindfury"> 风怒 (Windfury)
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin-top: 20px;">
+                    <label>即时制特性</label>
+                    <div class="keywords">
+                        <label class="trait-tag" style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox"> 可移动
+                        </label>
+                        <label class="trait-tag" style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox"> 远程攻击
+                        </label>
+                        <label class="trait-tag" style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox"> 快速
+                        </label>
+                        <label class="trait-tag" style="display: flex; align-items: center; gap: 5px;">
+                            <input type="checkbox"> 飞行
+                        </label>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="designer-section">
+                <h2>📖 战吼/效果</h2>
+                <div class="form-group">
+                    <textarea id="cardDesc" placeholder="输入卡牌效果描述...">对敌方英雄造成 2 伤害</textarea>
+                </div>
+            </div>
+            
+            <!-- 预览 -->
+            <div class="designer-section" style="text-align: center;">
+                <h2>🎴 卡牌预览</h2>
+                <div class="card-preview-large" id="cardPreview">
+                    <div class="card-header">
+                        <div class="card-cost-large" id="previewCost">4</div>
+                        <div class="card-name-large" id="previewName">火焰精灵</div>
+                    </div>
+                    <div class="card-art-large" id="previewArt">🔥</div>
+                    <div class="card-stats">
+                        <div class="stat stat-attack" id="previewAttack">4</div>
+                        <div class="stat stat-health" id="previewHealth">5</div>
+                    </div>
+                    <div class="card-desc-large" id="previewDesc">
+                        对敌方英雄造成 2 伤害
+                        <div class="keywords" style="justify-content: center; margin-top: 5px;">
+                            <span class="keyword-tag">战吼</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <button onclick="exportCard()" style="padding: 15px 40px; background: linear-gradient(90deg, #f39c12, #e74c3c); border: none; border-radius: 25px; color: #fff; font-size: 1.1rem; cursor: pointer; margin-top: 20px;">
+                    💾 导出卡牌
+                </button>
+            </div>
+        </div>
+    </section>
+    
+    <!-- 特性总结 -->
+    <section style="padding: 60px 20px; max-width: 800px; margin: 0 auto;">
+        <div class="designer-section">
+            <h2 style="color: #f39c12; margin-bottom: 20px;">🎯 Arena Legends 核心特性</h2>
+            
+            <div style="display: grid; gap: 20px;">
+                <div style="display: flex; gap: 15px; align-items: flex-start;">
+                    <div style="font-size: 2rem;">⚔️</div>
+                    <div>
+                        <h3 style="margin-bottom: 5px;">即时制战斗</h3>
+                        <p style="opacity: 0.7;">无需等待对手，实时对战，考验反应和决策</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; align-items: flex-start;">
+                    <div style="font-size: 2rem;">🪄</div>
+                    <div>
+                        <h3 style="margin-bottom: 5px;">战场位置</h3>
+                        <p style="opacity: 0.7;">拖拽放置卡牌到任意位置，近战需靠近，远程有射程</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; align-items: flex-start;">
+                    <div style="font-size: 2rem;">💎</div>
+                    <div>
+                        <h3 style="margin-bottom: 5px;">圣水恢复</h3>
+                        <p style="opacity: 0.7;">每秒恢复1点圣水，最多10点，合理规划费用</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; align-items: flex-start;">
+                    <div style="font-size: 2rem;">🔗</div>
+                    <div>
+                        <h3 style="margin-bottom: 5px;">连携系统</h3>
+                        <p style="opacity: 0.7;">特定卡牌组合触发额外效果，创造无限可能</p>
+                    </div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; align-items: flex-start;">
+                    <div style="font-size: 2rem;">⚖️</div>
+                    <div>
+                        <h3 style="margin-bottom: 5px;">公平竞技</h3>
+                        <p style="opacity: 0.7;">不卖数值，技术说话，3-5分钟快节奏对局</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <!-- CTA -->
+    <section class="cta-section">
+        <a href="#" class="cta-button">🎮 立即预约测试</a>
+        <p style="margin-top: 20px; opacity: 0.7;">
+            <span class="live-indicator">
+                <span class="live-dot"></span>
+                开发中 · 敬请期待
+            </span>
+        </p>
+    </section>
+    
+    <!-- 页脚 -->
+    <footer>
+        <p>© 2026 Arena Legends · 炉石传说 + 皇室战争 · 创新融合</p>
+        <p style="margin-top: 10px;">
+            <a href="#" style="color: #f39c12;">游戏设计文档</a> ·
+            <a href="#" style="color: #f39c12;">GitHub</a> ·
+            <a href="#" style="color: #f39c12;">社区</a>
+        </p>
+    </footer>
+    
+    <script>
+        // 实时预览更新
+        document.getElementById('cardName').addEventListener('input', function() {
+            document.getElementById('previewName').textContent = this.value || '卡牌名称';
+        });
+        
+        document.getElementById('cardCost').addEventListener('input', function() {
+            document.getElementById('previewCost').textContent = this.value || '0';
+        });
+        
+        document.getElementById('cardAttack').addEventListener('input', function() {
+            document.getElementById('previewAttack').textContent = this.value || '0';
+        });
+        
+        document.getElementById('cardHealth').addEventListener('input', function() {
+            document.getElementById('previewHealth').textContent = this.value || '0';
+        });
+        
+        document.getElementById('cardDesc').addEventListener('input', function() {
+            document.getElementById('previewDesc').innerHTML = this.value + '<div class="keywords" style="justify-content: center; margin-top: 5px;"><span class="keyword-tag">战吼</span></div>';
+        });
+        
+        // 导出卡牌
+        function exportCard() {
+            const card = {
+                name: document.getElementById('cardName').value,
+                cost: parseInt(document.getElementById('cardCost').value),
+                attack: parseInt(document.getElementById('cardAttack').value),
+                health: parseInt(document.getElementById('cardHealth').value),
+                type: document.getElementById('cardType').value,
+                class: document.getElementById('cardClass').value,
+                description: document.getElementById('cardDesc').value,
+                keywords: [],
+                traits: []
+            };
+            
+            if (document.getElementById('keywordCharge').checked) card.keywords.push('冲锋');
+            if (document.getElementById('keywordTaunt').checked) card.keywords.push('嘲讽');
+            if (document.getElementById('keywordRush').checked) card.keywords.push('突袭');
+            
+            console.log('导出的卡牌:', JSON.stringify(card, null, 2));
+            alert('卡牌数据已导出到控制台！\n\n' + JSON.stringify(card, null, 2));
+        }
+        
+        // 动画效果
+        console.log('⚔️ Arena Legends - 即时制炉石传说');
+        console.log('🎮 游戏设计文档: /root/.openclaw/workspace/game-design/arena-legends/GAME_DESIGN.md');
+    </script>
+</body>
+</html>
