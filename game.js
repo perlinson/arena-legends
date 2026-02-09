@@ -1,45 +1,50 @@
 /**
  * 🎮 Arena Legends - 即时制炉石传说
- * 完整游戏引擎
+ * 真正的即时制战斗系统
  */
 
 class ArenaGame {
     constructor() {
-        console.log('⚔️ Arena Legends 初始化中...');
+        console.log('⚔️ Arena Legends 即时制战斗初始化...');
+        
+        // 战斗配置
+        this.config = {
+            manaPerSecond: 1,      // 每秒回复圣水
+            maxMana: 10,           // 最大圣水
+            attackInterval: 10000,  // 攻击间隔 10秒
+            manaStart: 5            // 初始圣水
+        };
         
         // 玩家状态
         this.player = {
-            mana: 5,
-            maxMana: 10,
+            mana: this.config.manaStart,
+            maxMana: this.config.maxMana,
             health: 30,
             hand: [],
-            field: [],
+            // 6个战场格子 [前排左, 前排中, 前排右, 后排左, 后排中, 后排右]
+            field: [null, null, null, null, null, null],
             deck: []
         };
         
         // 敌人状态
         this.enemy = {
             health: 30,
-            field: []
+            // 6个战场格子
+            field: [null, null, null, null, null, null]
         };
         
         // 游戏状态
-        this.isPlayerTurn = true;
-        this.selectedCard = null;
+        this.isGameRunning = true;
+        this.lastAttackTime = 0;
         this.draggedCard = null;
-        this.manaPerSecond = 1;
-        this.gameLoop = null;
         
         // 初始化
         this.createDeck();
-        this.dealCards(4); // 发4张牌
+        this.dealCards(4);
         this.renderAll();
-        this.setupEventListeners();
+        this.startGame();
         
-        // 圣水恢复
-        this.startManaRegen();
-        
-        console.log('✅ Arena Legends 启动成功!');
+        console.log('✅ Arena Legends 即时制战斗启动!');
     }
     
     // 创建初始牌堆
@@ -52,23 +57,21 @@ class ArenaGame {
             { name: '治疗精灵', cost: 2, attack: 1, health: 4, art: '💚', keywords: ['battlecry'], traits: ['support'] },
             { name: '闪电箭', cost: 3, attack: 4, health: 2, art: '⚡', keywords: ['ranged'], traits: [] },
             { name: '火龙', cost: 6, attack: 8, health: 7, art: '🐉', keywords: ['charge'], traits: ['flying'] },
-            { name: '深渊领主', cost: 7, attack: 10, health: 8, art: '👹', keywords: ['taunt'], traits: ['boss'] },
             { name: '骷髅兵', cost: 1, attack: 2, health: 1, art: '💀', keywords: [], traits: [] },
             { name: '石巨人', cost: 4, attack: 4, health: 7, art: '🗿', keywords: ['taunt'], traits: [] },
-            { name: '风鹰', cost: 5, attack: 6, health: 4, art: '🦅', keywords: ['rush', 'flying'], traits: [] },
-            { name: '水元素', cost: 3, attack: 3, health: 4, art: '💧', keywords: [], traits: [] }
+            { name: '风鹰', cost: 5, attack: 6, health: 4, art: '🦅', keywords: ['rush', 'flying'], traits: [] }
         ];
         
-        // 创建12张牌的牌堆
-        for (let i = 0; i < 12; i++) {
+        // 创建15张牌的牌堆
+        for (let i = 0; i < 15; i++) {
             const template = cardTemplates[i % cardTemplates.length];
             this.player.deck.push({ 
                 ...template, 
-                id: `card_${Date.now()}_${i}` 
+                id: `p_${Date.now()}_${i}`,
+                attack: template.attack,
+                health: template.health
             });
         }
-        
-        console.log(`📦 创建了 ${this.player.deck.length} 张牌的牌堆`);
     }
     
     // 发牌
@@ -79,36 +82,239 @@ class ArenaGame {
                 this.player.hand.push(card);
             }
         }
-        console.log(`🎴 发牌后: 手牌 ${this.player.hand.length}, 牌堆 ${this.player.deck.length}`);
     }
     
-    // 圣水恢复
-    startManaRegen() {
-        this.gameLoop = setInterval(() => {
-            if (this.player.mana < this.player.maxMana) {
-                this.player.mana = Math.min(this.player.mana + this.manaPerSecond, this.player.maxMana);
+    // 启动游戏
+    startGame() {
+        // 圣水恢复定时器
+        setInterval(() => {
+            if (!this.isGameRunning) return;
+            if (this.player.mana < this.config.maxMana) {
+                this.player.mana = Math.min(this.player.mana + 1, this.config.maxMana);
                 this.updateManaDisplay();
             }
         }, 1000);
+        
+        // 更新攻击倒计时条
+        setInterval(() => {
+            if (!this.isGameRunning) return;
+            const elapsed = Date.now() - this.lastAttackTime;
+            const progress = Math.min((elapsed / this.config.attackInterval) * 100, 100);
+            const timerFill = document.getElementById('timerFill');
+            if (timerFill) {
+                timerFill.style.width = `${progress}%`;
+            }
+        }, 500);
+        
+        // 自动攻击定时器 - 每10秒
+        setInterval(() => {
+            if (!this.isGameRunning) return;
+            const timerFill = document.getElementById('timerFill');
+            if (timerFill) timerFill.style.width = '0%';
+            
+            this.autoAttack();
+        }, this.config.attackInterval);
+        
+        // 敌方AI定时器
+        setInterval(() => {
+            if (!this.isGameRunning) return;
+            this.enemyAI();
+        }, 3000);
+        
+        // 定时发牌
+        setInterval(() => {
+            if (!this.isGameRunning) return;
+            if (this.player.hand.length < 7) {
+                this.dealCards(1);
+                this.renderHand();
+            }
+        }, 15000);
+    }
+    
+    // 自动攻击
+    autoAttack() {
+        const now = Date.now();
+        if (now - this.lastAttackTime < this.config.attackInterval - 1000) return;
+        this.lastAttackTime = now;
+        
+        console.log('⚔️ 自动攻击回合!');
+        
+        // 玩家随从攻击
+        for (let i = 0; i < 6; i++) {
+            const minion = this.player.field[i];
+            if (minion && minion.health > 0) {
+                this.performAttack('player', i);
+            }
+        }
+        
+        // 敌方随从攻击
+        for (let i = 0; i < 6; i++) {
+            const minion = this.enemy.field[i];
+            if (minion && minion.health > 0) {
+                this.performAttack('enemy', i);
+            }
+        }
+        
+        // 更新显示
+        this.renderField();
+        this.updateHealthDisplay();
+        this.checkGameEnd();
+    }
+    
+    // 执行攻击
+    performAttack(side, index) {
+        const field = side === 'player' ? this.player.field : this.enemy.field;
+        const opponent = side === 'player' ? this.enemy : this.player;
+        const opponentField = opponent.field;
+        
+        const attacker = field[index];
+        if (!attacker || attacker.health <= 0) return;
+        
+        // 计算目标位置
+        // 玩家: 0,1,2(前排) -> 3,4,5(后排) -> 对应敌方: 0,1,2(前排) -> 3,4,5(后排)
+        const targetIndex = index; // 正前方
+        
+        const target = opponentField[targetIndex];
+        
+        if (target && target.health > 0) {
+            // 攻击敌方随从
+            target.health -= attacker.attack;
+            attacker.health -= target.attack;
+            this.showMessage(`⚔️ ${attacker.name} ↔️ ${target.name}!`);
+        } else {
+            // 攻击敌方英雄
+            opponent.health -= attacker.attack;
+            this.showMessage(`⚔️ ${attacker.name} 攻击敌方英雄! -${attacker.attack}`);
+        }
+        
+        // 检查死亡
+        if (attacker.health <= 0) {
+            field[index] = null;
+        }
+        if (target && target.health <= 0) {
+            opponentField[targetIndex] = null;
+        }
+    }
+    
+    // 敌方AI
+    enemyAI() {
+        // 随机放置随从
+        const emptySlots = this.enemy.field.map((s, i) => s === null ? i : -1).filter(i => i !== -1);
+        
+        if (emptySlots.length > 0 && Math.random() > 0.5) {
+            const slot = emptySlots[Math.floor(Math.random() * emptySlots.length)];
+            
+            const enemyCards = [
+                { name: '敌方狼人', cost: 3, attack: 4, health: 3, art: '🐺' },
+                { name: '敌方火元素', cost: 4, attack: 5, health: 5, art: '🔥' },
+                { name: '敌方骷髅', cost: 1, attack: 2, health: 1, art: '💀' },
+                { name: '敌方石巨人', cost: 4, attack: 4, health: 7, art: '🗿' }
+            ];
+            
+            const card = { ...enemyCards[Math.floor(Math.random() * enemyCards.length)], id: `e_${Date.now()}` };
+            this.enemy.field[slot] = card;
+            
+            this.renderEnemyField();
+            this.showMessage(`😈 敌方放置了 ${card.name}!`);
+        }
     }
     
     // 渲染所有
     renderAll() {
-        this.updateHealthDisplay();
-        this.updateManaDisplay();
         this.renderHand();
         this.renderPlayerField();
         this.renderEnemyField();
-        this.updateTurnButton();
+        this.updateManaDisplay();
+        this.updateHealthDisplay();
+        this.renderFieldGrid();
+    }
+    
+    // 渲染战场格子
+    renderFieldGrid() {
+        // 渲染玩家战场格子
+        const playerGrid = document.getElementById('playerFieldGrid');
+        if (playerGrid) {
+            playerGrid.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'field-slot';
+                slot.dataset.slot = i;
+                slot.dataset.side = 'player';
+                
+                const minion = this.player.field[i];
+                if (minion) {
+                    slot.innerHTML = this.createMinionHTML(minion);
+                    slot.classList.add('occupied');
+                } else {
+                    slot.innerHTML = `<span class="slot-label">${this.getSlotLabel(i)}</span>`;
+                }
+                
+                playerGrid.appendChild(slot);
+            }
+        }
+        
+        // 渲染敌方战场格子
+        const enemyGrid = document.getElementById('enemyFieldGrid');
+        if (enemyGrid) {
+            enemyGrid.innerHTML = '';
+            for (let i = 0; i < 6; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'field-slot enemy';
+                slot.dataset.slot = i;
+                slot.dataset.side = 'enemy';
+                
+                const minion = this.enemy.field[i];
+                if (minion) {
+                    slot.innerHTML = this.createEnemyMinionHTML(minion);
+                    slot.classList.add('occupied');
+                } else {
+                    slot.innerHTML = `<span class="slot-label">${this.getSlotLabel(i)}</span>`;
+                }
+                
+                enemyGrid.appendChild(slot);
+            }
+        }
+    }
+    
+    // 获取格子标签
+    getSlotLabel(index) {
+        const labels = ['前左', '前中', '前右', '后左', '后中', '后右'];
+        return labels[index];
+    }
+    
+    // 创建随从HTML
+    createMinionHTML(minion) {
+        return `
+            <div class="minion-content" data-id="${minion.id}">
+                <div class="minion-art">${minion.art}</div>
+                <div class="minion-name">${minion.name}</div>
+                <div class="minion-stats">
+                    <span class="attack">⚔️${minion.attack}</span>
+                    <span class="health">❤️${minion.health}</span>
+                </div>
+                ${minion.keywords.length > 0 ? `<div class="keywords">${minion.keywords.map(k => `<span class="kw">${k}</span>`).join('')}</div>` : ''}
+            </div>
+        `;
+    }
+    
+    // 创建敌方随从HTML
+    createEnemyMinionHTML(minion) {
+        return `
+            <div class="minion-content enemy">
+                <div class="minion-art">${minion.art}</div>
+                <div class="minion-name">${minion.name}</div>
+                <div class="minion-stats">
+                    <span class="attack">⚔️${minion.attack}</span>
+                    <span class="health">❤️${minion.health}</span>
+                </div>
+            </div>
+        `;
     }
     
     // 渲染手牌
     renderHand() {
         const handContainer = document.getElementById('handContainer');
-        if (!handContainer) {
-            console.log('❌ 手牌容器不存在');
-            return;
-        }
+        if (!handContainer) return;
         
         if (this.player.hand.length === 0) {
             handContainer.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.6;">🎴 等待发牌...</div>';
@@ -128,15 +334,13 @@ class ArenaGame {
             </div>
         `).join('');
         
-        // 重新添加拖拽事件
+        // 拖拽事件
         this.player.hand.forEach((card, index) => {
             const el = handContainer.querySelector(`[data-index="${index}"]`);
             if (el) {
                 el.addEventListener('dragstart', (e) => {
                     this.draggedCard = { el, card, index };
                     el.classList.add('dragging');
-                    e.dataTransfer.effectAllowed = 'move';
-                    e.dataTransfer.setData('text/plain', index);
                 });
                 el.addEventListener('dragend', () => {
                     el.classList.remove('dragging');
@@ -144,119 +348,93 @@ class ArenaGame {
                 });
             }
         });
-        
-        console.log(`🎴 渲染了 ${this.player.hand.length} 张手牌`);
     }
     
-    // 渲染我方战场
+    // 渲染玩家战场
     renderPlayerField() {
-        const fieldContainer = document.getElementById('playerField');
-        if (!fieldContainer) {
-            console.log('❌ 战场容器不存在');
-            return;
+        // 更新格子内容
+        for (let i = 0; i < 6; i++) {
+            const slot = document.querySelector(`#playerFieldGrid .field-slot[data-slot="${i}"]`);
+            if (slot) {
+                const minion = this.player.field[i];
+                if (minion) {
+                    slot.innerHTML = this.createMinionHTML(minion);
+                    slot.classList.add('occupied');
+                } else {
+                    slot.innerHTML = `<span class="slot-label">${this.getSlotLabel(i)}</span>`;
+                    slot.classList.remove('occupied');
+                }
+            }
         }
-        
-        if (this.player.field.length === 0) {
-            fieldContainer.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.5;">⚔️ 等待放置随从...</div>';
-            return;
-        }
-        
-        fieldContainer.innerHTML = this.player.field.map(card => `
-            <div class="field-minion" data-card-id="${card.id}" onclick="game.selectMinion('${card.id}')">
-                <div class="minion-art">${card.art}</div>
-                <div class="minion-stats">
-                    <span class="attack">⚔️${card.attack}</span>
-                    <span class="health">❤️${card.health}</span>
-                </div>
-                <div class="minion-name">${card.name}</div>
-                ${card.keywords.length > 0 ? `<div class="minion-keywords">${card.keywords.map(k => `<span class="kw">${k}</span>`).join('')}</div>` : ''}
-            </div>
-        `).join('');
     }
     
     // 渲染敌方战场
     renderEnemyField() {
-        const enemyContainer = document.getElementById('enemyField');
-        if (!enemyContainer) return;
-        
-        if (this.enemy.field.length === 0) {
-            enemyContainer.innerHTML = '<div style="text-align: center; padding: 20px; opacity: 0.5;">👹 敌方区域</div>';
-            return;
+        // 更新格子内容
+        for (let i = 0; i < 6; i++) {
+            const slot = document.querySelector(`#enemyFieldGrid .field-slot[data-slot="${i}"]`);
+            if (slot) {
+                const minion = this.enemy.field[i];
+                if (minion) {
+                    slot.innerHTML = this.createEnemyMinionHTML(minion);
+                    slot.classList.add('occupied');
+                } else {
+                    slot.innerHTML = `<span class="slot-label">${this.getSlotLabel(i)}</span>`;
+                    slot.classList.remove('occupied');
+                }
+            }
         }
-        
-        enemyContainer.innerHTML = this.enemy.field.map(card => `
-            <div class="enemy-minion" onclick="game.attackEnemyMinion('${card.id}')">
-                <div class="enemy-art">${card.art}</div>
-                <div class="enemy-stats">
-                    <span class="attack">⚔️${card.attack}</span>
-                    <span class="health">❤️${card.health}</span>
-                </div>
-            </div>
-        `).join('');
     }
     
-    // 设置事件监听
+    // 渲染战场（兼容旧版本）
+    renderField() {
+        this.renderPlayerField();
+        this.renderEnemyField();
+    }
+    
+    // 设置事件
     setupEventListeners() {
-        // 拖拽经过
-        document.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            if (e.target.classList.contains('drop-zone') || e.target.closest('.drop-zone')) {
-                e.dataTransfer.dropEffect = 'move';
-            }
+        // 格子放置
+        document.querySelectorAll('.field-slot[data-side="player"]').forEach(slot => {
+            slot.addEventListener('dragover', (e) => e.preventDefault());
+            slot.addEventListener('dragenter', () => slot.classList.add('drag-over'));
+            slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+            slot.addEventListener('drop', (e) => {
+                e.preventDefault();
+                slot.classList.remove('drag-over');
+                const slotIndex = parseInt(slot.dataset.slot);
+                this.placeCard(slotIndex);
+            });
+            slot.addEventListener('click', () => {
+                const slotIndex = parseInt(slot.dataset.slot);
+                this.selectMinion(slotIndex);
+            });
         });
         
-        // 拖拽进入
-        document.addEventListener('dragenter', (e) => {
-            if (e.target.classList.contains('drop-zone') || e.target.closest('.drop-zone')) {
-                e.target.classList.add('drag-over');
-            }
+        // 敌方格子点击攻击
+        document.querySelectorAll('.field-slot[data-side="enemy"]').forEach(slot => {
+            slot.addEventListener('click', () => {
+                const slotIndex = parseInt(slot.dataset.slot);
+                this.attackTarget(slotIndex);
+            });
         });
-        
-        // 拖拽离开
-        document.addEventListener('dragleave', (e) => {
-            if (e.target.classList.contains('drop-zone')) {
-                e.target.classList.remove('drag-over');
-            }
-        });
-        
-        // 放下卡牌
-        document.addEventListener('drop', (e) => {
-            e.preventDefault();
-            
-            const dropZone = e.target.classList.contains('drop-zone') 
-                ? e.target 
-                : e.target.closest('.drop-zone');
-            
-            if (dropZone && this.draggedCard) {
-                const { index, card } = this.draggedCard;
-                const zoneType = dropZone.dataset.zone;
-                
-                this.playCard(index, card, zoneType);
-                
-                dropZone.classList.remove('drag-over');
-            }
-        });
-        
-        // 结束回合按钮
-        const endTurnBtn = document.getElementById('endTurnBtn');
-        if (endTurnBtn) {
-            endTurnBtn.addEventListener('click', () => this.endTurn());
-        }
-        
-        // 重新开始按钮
-        const restartBtn = document.getElementById('restartBtn');
-        if (restartBtn) {
-            restartBtn.addEventListener('click', () => this.restart());
-        }
-        
-        console.log('✅ 事件监听已设置');
     }
     
-    // 出牌
-    playCard(index, card, zoneType) {
+    // 放置卡牌到格子
+    placeCard(slotIndex) {
+        if (!this.draggedCard) return;
+        
+        const { index, card } = this.draggedCard;
+        
         // 检查费用
         if (card.cost > this.player.mana) {
             this.showMessage('💎 圣水不足!');
+            return;
+        }
+        
+        // 检查格子是否已有随从
+        if (this.player.field[slotIndex]) {
+            this.showMessage('⚠️ 该格子已有随从!');
             return;
         }
         
@@ -266,9 +444,8 @@ class ArenaGame {
         // 移出手牌
         this.player.hand.splice(index, 1);
         
-        // 放置到战场
-        card.zone = zoneType;
-        this.player.field.push(card);
+        // 放置到战场格子
+        this.player.field[slotIndex] = { ...card, placedAt: Date.now() };
         
         // 触发战吼
         if (card.keywords.includes('battlecry')) {
@@ -280,9 +457,8 @@ class ArenaGame {
         this.renderHand();
         this.renderPlayerField();
         
-        this.showMessage(`🎴 ${card.name} 出场!`);
-        
-        console.log(`✅ ${card.name} 放置到 ${zoneType} 区域`);
+        this.showMessage(`🎴 ${card.name} 放置到 ${this.getSlotLabel(slotIndex)}!`);
+        console.log(`✅ ${card.name} -> 格子 ${slotIndex}`);
     }
     
     // 战吼效果
@@ -290,131 +466,63 @@ class ArenaGame {
         if (card.name === '治疗精灵') {
             this.player.health = Math.min(this.player.health + 3, 30);
             this.updateHealthDisplay();
-            this.showMessage('✨ 治疗精灵回复了 3 点生命!');
+            this.showMessage('✨ 治疗精灵回复 3 点生命!');
         }
     }
     
     // 选择随从
-    selectMinion(cardId) {
-        const card = this.player.field.find(c => c.id === cardId);
-        if (!card) return;
+    selectMinion(slotIndex) {
+        const minion = this.player.field[slotIndex];
+        if (!minion) return;
         
-        if (this.selectedCard && this.selectedCard.id !== cardId) {
-            // 攻击
-            this.attackMinion(this.selectedCard, card);
-        } else if (!this.selectedCard) {
-            this.selectedCard = card;
-            document.querySelectorAll('.field-minion').forEach(el => el.classList.remove('selected'));
-            const el = document.querySelector(`.field-minion[data-card-id="${cardId}"]`);
-            if (el) el.classList.add('selected');
-            this.showMessage(`⚔️ ${card.name} 已选择，点击目标攻击`);
-        } else {
-            this.selectedCard = null;
-            document.querySelectorAll('.field-minion').forEach(el => el.classList.remove('selected'));
-        }
+        this.showMessage(`⚔️ ${minion.name} 已选择，点击敌方目标攻击`);
+        this.selectedSlot = slotIndex;
     }
     
-    // 攻击随从
-    attackMinion(attacker, defender) {
-        defender.health -= attacker.attack;
-        attacker.health -= defender.attack;
-        
-        this.showMessage(`⚔️ ${attacker.name} 攻击 ${defender.name}!`);
-        
-        if (defender.health <= 0) {
-            this.player.field = this.player.field.filter(c => c.id !== defender.id);
-        }
-        
-        if (attacker.health <= 0) {
-            this.player.field = this.player.field.filter(c => c.id !== attacker.id);
-        }
-        
-        this.selectedCard = null;
-        document.querySelectorAll('.field-minion').forEach(el => el.classList.remove('selected'));
-        this.renderPlayerField();
-    }
-    
-    // 攻击敌方随从
-    attackEnemyMinion(cardId) {
-        if (!this.selectedCard) {
+    // 攻击目标
+    attackTarget(targetSlot) {
+        if (this.selectedSlot === undefined) {
             this.showMessage('💡 先点击我方随从选择!');
             return;
         }
         
-        const enemyCard = this.enemy.field.find(c => c.id === cardId);
-        if (!enemyCard) return;
+        const attacker = this.player.field[this.selectedSlot];
+        const target = this.enemy.field[targetSlot];
         
-        this.selectedCard.attackStat = (this.selectedCard.attackStat || this.selectedCard.attack);
-        enemyCard.health -= this.selectedCard.attack;
-        
-        this.showMessage(`⚔️ ${this.selectedCard.name} 攻击 ${enemyCard.name}!`);
-        
-        if (enemyCard.health <= 0) {
-            this.enemy.field = this.enemy.field.filter(c => c.id !== cardId);
+        if (!attacker) {
+            this.showMessage('⚠️ 该随从已不在场!');
+            return;
         }
         
-        this.selectedCard = null;
-        document.querySelectorAll('.field-minion').forEach(el => el.classList.remove('selected'));
+        if (target) {
+            // 攻击随从
+            target.health -= attacker.attack;
+            attacker.health -= target.attack;
+            this.showMessage(`⚔️ ${attacker.name} ↔️ ${target.name}!`);
+            
+            if (target.health <= 0) this.enemy.field[targetSlot] = null;
+            if (attacker.health <= 0) this.player.field[this.selectedSlot] = null;
+        } else {
+            // 攻击英雄
+            this.enemy.health -= attacker.attack;
+            this.showMessage(`⚔️ ${attacker.name} 攻击敌方英雄! -${attacker.attack}`);
+        }
+        
+        this.selectedSlot = undefined;
         this.renderPlayerField();
         this.renderEnemyField();
+        this.updateHealthDisplay();
+        this.checkGameEnd();
     }
     
-    // 结束回合
-    endTurn() {
-        this.isPlayerTurn = false;
-        this.updateTurnButton();
-        
-        this.showMessage('⏳ 敌方回合...');
-        
-        // 敌方AI简单逻辑
-        setTimeout(() => {
-            this.enemyTurn();
-        }, 1500);
-    }
-    
-    // 敌方回合
-    enemyTurn() {
-        // 敌方随机放置随从
-        if (Math.random() > 0.3 && this.enemy.field.length < 5) {
-            const enemyCards = [
-                { name: '敌方狼人', cost: 3, attack: 4, health: 3, art: '🐺' },
-                { name: '敌方火元素', cost: 4, attack: 5, health: 5, art: '🔥' },
-                { name: '敌方骷髅', cost: 1, attack: 2, health: 1, art: '💀' }
-            ];
-            const card = { ...enemyCards[Math.floor(Math.random() * enemyCards.length)], id: `enemy_${Date.now()}` };
-            this.enemy.field.push(card);
-            this.showMessage(`😈 敌方放置了 ${card.name}!`);
+    // 更新显示
+    updateManaDisplay() {
+        const manaDisplay = document.getElementById('manaDisplay');
+        if (manaDisplay) {
+            manaDisplay.textContent = `${this.player.mana}/${this.player.maxMana}`;
         }
-        
-        // 敌方攻击
-        if (this.player.field.length > 0) {
-            const target = this.player.field[Math.floor(Math.random() * this.player.field.length)];
-            const damage = Math.floor(Math.random() * 4) + 2;
-            
-            target.health -= damage;
-            this.showMessage(`⚔️ 敌方攻击 ${target.name}! -${damage}`);
-            
-            if (target.health <= 0) {
-                this.player.field = this.player.field.filter(c => c.id !== target.id);
-            }
-        }
-        
-        this.renderPlayerField();
-        this.renderEnemyField();
-        
-        // 回到玩家回合
-        setTimeout(() => {
-            this.isPlayerTurn = true;
-            this.player.mana = Math.min(this.player.mana + 2, this.player.maxMana);
-            this.dealCards(1);
-            this.updateTurnButton();
-            this.updateManaDisplay();
-            this.renderHand();
-            this.showMessage('⚔️ 你的回合!');
-        }, 1500);
     }
     
-    // 更新生命显示
     updateHealthDisplay() {
         const playerHealth = document.getElementById('playerHealth');
         const enemyHealth = document.getElementById('enemyHealth');
@@ -423,62 +531,33 @@ class ArenaGame {
         if (enemyHealth) enemyHealth.textContent = this.enemy.health;
     }
     
-    // 更新圣水显示
-    updateManaDisplay() {
-        const manaDisplay = document.getElementById('manaDisplay');
-        if (manaDisplay) {
-            manaDisplay.textContent = `${this.player.mana}/${this.player.maxMana}`;
-        }
-    }
-    
-    // 更新回合按钮
-    updateTurnButton() {
-        const endTurnBtn = document.getElementById('endTurnBtn');
-        if (endTurnBtn) {
-            if (this.isPlayerTurn) {
-                endTurnBtn.disabled = false;
-                endTurnBtn.textContent = '✅ 结束回合';
-            } else {
-                endTurnBtn.disabled = true;
-                endTurnBtn.textContent = '⏳ 敌方回合...';
-            }
-        }
-    }
-    
     // 显示消息
     showMessage(text) {
         const msgEl = document.getElementById('gameMessage');
         if (msgEl) {
             msgEl.textContent = text;
             msgEl.style.opacity = '1';
-            setTimeout(() => {
-                msgEl.style.opacity = '0';
-            }, 2000);
+            setTimeout(() => { msgEl.style.opacity = '0'; }, 2500);
         }
         console.log(`💬 ${text}`);
     }
     
+    // 检查游戏结束
+    checkGameEnd() {
+        if (this.player.health <= 0) {
+            this.isGameRunning = false;
+            this.showMessage('💀 你输了!');
+            setTimeout(() => alert('💀 游戏结束! 敌方获胜!'), 500);
+        } else if (this.enemy.health <= 0) {
+            this.isGameRunning = false;
+            this.showMessage('🎉 你赢了!');
+            setTimeout(() => alert('🎉 游戏结束! 你获胜!'), 500);
+        }
+    }
+    
     // 重新开始
     restart() {
-        // 重置状态
-        this.player.mana = 5;
-        this.player.health = 30;
-        this.player.hand = [];
-        this.player.field = [];
-        this.player.deck = [];
-        this.enemy.health = 30;
-        this.enemy.field = [];
-        this.isPlayerTurn = true;
-        this.selectedCard = null;
-        
-        // 重新初始化
-        this.createDeck();
-        this.dealCards(4);
-        this.renderAll();
-        this.updateTurnButton();
-        
-        this.showMessage('🎮 新游戏开始!');
-        console.log('✅ 游戏已重置');
+        location.reload();
     }
 }
 
@@ -486,4 +565,5 @@ class ArenaGame {
 document.addEventListener('DOMContentLoaded', () => {
     console.log('📄 DOM加载完成');
     window.game = new ArenaGame();
+    setTimeout(() => game.setupEventListeners(), 100);
 });
