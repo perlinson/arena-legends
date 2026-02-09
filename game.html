@@ -5,32 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>🎮 Arena Legends - 即时制对战</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             color: #fff;
             min-height: 100vh;
-            overflow-x: hidden;
         }
-        
-        /* 导航 */
         .nav {
             background: rgba(0,0,0,0.5);
             padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 100;
         }
-        
         .logo {
             font-size: 1.2rem;
             font-weight: bold;
@@ -38,32 +26,14 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
-        .nav-links {
-            display: flex;
-            gap: 15px;
-        }
-        
         .nav-links a {
             color: #fff;
             text-decoration: none;
             opacity: 0.8;
             font-size: 0.9rem;
-            transition: opacity 0.3s;
+            margin-left: 15px;
         }
-        
-        .nav-links a:hover, .nav-links a.active {
-            opacity: 1;
-        }
-        
-        /* 游戏容器 */
-        .game-container {
-            max-width: 1100px;
-            margin: 0 auto;
-            padding: 10px;
-        }
-        
-        /* 顶部信息 */
+        .game-container { max-width: 1100px; margin: 0 auto; padding: 10px; }
         .top-bar {
             display: flex;
             justify-content: space-between;
@@ -73,13 +43,7 @@
             border-radius: 12px;
             margin-bottom: 10px;
         }
-        
-        .player-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-        
+        .player-info { display: flex; align-items: center; gap: 12px; }
         .avatar {
             width: 42px;
             height: 42px;
@@ -89,58 +53,8 @@
             justify-content: center;
             font-size: 1.2rem;
         }
-        
-        .avatar.hero {
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
-        }
-        
-        .avatar.enemy {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
-        }
-        
-        .player-stats {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-        }
-        
-        .player-name {
-            font-weight: bold;
-            font-size: 0.9rem;
-        }
-        
-        .health-bar {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .health-value {
-            font-weight: bold;
-            font-size: 1rem;
-            min-width: 35px;
-        }
-        
-        .health-value.hero { color: #3498db; }
-        .health-value.enemy { color: #e74c3c; }
-        
-        .health-bar-bg {
-            width: 80px;
-            height: 8px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        
-        .health-bar-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #e74c3c, #27ae60);
-            transition: width 0.3s;
-        }
-        
-        /* 圣水显示 */
+        .avatar.hero { background: linear-gradient(135deg, #3498db, #2980b9); }
+        .avatar.enemy { background: linear-gradient(135deg, #e74c3c, #c0392b); }
         .mana-display {
             display: flex;
             align-items: center;
@@ -150,32 +64,13 @@
             border-radius: 18px;
             border: 2px solid rgba(52, 152, 219, 0.5);
         }
-        
-        .mana-icon {
-            font-size: 1.2rem;
-        }
-        
-        .mana-value {
-            font-size: 1rem;
-            font-weight: bold;
-            color: #3498db;
-        }
-        
-        /* 战场 */
+        .mana-value { font-size: 1rem; font-weight: bold; color: #3498db; }
         .battlefield {
-            background: linear-gradient(180deg, 
-                #1a1a2e 0%, 
-                #2c3e50 15%, 
-                #2ecc71 35%, 
-                #27ae60 65%, 
-                #1e8449 100%);
+            background: linear-gradient(180deg, #1a1a2e 0%, #2c3e50 15%, #2ecc71 35%, #27ae60 65%, #1e8449 100%);
             border-radius: 15px;
             padding: 12px;
             min-height: 320px;
-            position: relative;
         }
-        
-        /* 战场格子 */
         .battle-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -183,7 +78,6 @@
             max-width: 450px;
             margin: 0 auto;
         }
-        
         .field-slot {
             height: 65px;
             background: rgba(255,255,255,0.06);
@@ -193,68 +87,20 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s;
             cursor: pointer;
-            position: relative;
         }
-        
-        .field-slot:hover {
-            background: rgba(243, 156, 18, 0.15);
-            border-color: rgba(243, 156, 18, 0.5);
-        }
-        
-        .field-slot.drag-over {
-            background: rgba(243, 156, 18, 0.3);
-            border-color: #f39c12;
-            transform: scale(1.03);
-        }
-        
-        .field-slot.occupied {
-            background: transparent;
-            border: none;
-            cursor: default;
-        }
-        
-        /* 己方随从 - 蓝色底 */
         .field-slot.player-minion {
             background: linear-gradient(135deg, rgba(52, 152, 219, 0.4), rgba(41, 128, 185, 0.6));
             border: 2px solid rgba(52, 152, 219, 0.8);
-            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
         }
-        
-        .field-slot.player-minion:hover {
-            background: linear-gradient(135deg, rgba(52, 152, 219, 0.5), rgba(41, 128, 185, 0.7));
-        }
-        
-        /* 敌方随从 - 红色底 */
         .field-slot.enemy-minion {
             background: linear-gradient(135deg, rgba(231, 76, 60, 0.4), rgba(192, 57, 43, 0.6));
             border: 2px solid rgba(231, 76, 60, 0.8);
-            box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
         }
-        
-        .slot-label {
-            font-size: 0.65rem;
-            opacity: 0.4;
-        }
-        
-        /* 随从内容 */
-        .minion-content {
-            text-align: center;
-            padding: 3px;
-            width: 100%;
-        }
-        
-        .minion-art {
-            font-size: 1.4rem;
-        }
-        
-        .minion-name {
-            font-size: 0.55rem;
-            margin: 1px 0;
-            opacity: 0.9;
-        }
-        
+        .slot-label { font-size: 0.65rem; opacity: 0.4; }
+        .minion-content { text-align: center; padding: 3px; }
+        .minion-art { font-size: 1.4rem; }
+        .minion-name { font-size: 0.55rem; opacity: 0.9; }
         .minion-stats {
             display: flex;
             gap: 8px;
@@ -262,18 +108,6 @@
             font-size: 0.65rem;
             font-weight: bold;
         }
-        
-        .minion-stats .attack {
-            color: #fff;
-            text-shadow: 0 0 3px rgba(0,0,0,0.5);
-        }
-        
-        .minion-stats .health {
-            color: #fff;
-            text-shadow: 0 0 3px rgba(0,0,0,0.5);
-        }
-        
-        /* 攻击进度条 */
         .attack-progress-bar {
             position: absolute;
             bottom: 3px;
@@ -284,69 +118,20 @@
             border-radius: 2px;
             overflow: hidden;
         }
-        
-        .attack-progress-bar.enemy {
-            background: rgba(0,0,0,0.4);
-        }
-        
         .attack-progress-fill {
             height: 100%;
             background: linear-gradient(90deg, #f39c12, #e74c3c);
             width: 0%;
-            transition: width 0.1s linear;
-            border-radius: 2px;
+            transition: width 0.1s;
         }
-        
-        /* 关键词标签 */
-        .keywords {
-            display: flex;
-            gap: 2px;
-            justify-content: center;
-            margin-top: 2px;
-        }
-        
-        .keywords .kw {
-            font-size: 0.45rem;
-            padding: 1px 3px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-        }
-        
-        /* 中央区域 */
-        .center-info {
-            text-align: center;
-            padding: 10px;
-            margin: 10px auto;
-            max-width: 350px;
-        }
-        
-        .turn-info {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-        
-        /* 手牌区 */
         .hand-area {
             background: rgba(0,0,0,0.3);
             padding: 12px;
             border-radius: 12px;
             margin-top: 10px;
         }
-        
-        .hand-label {
-            text-align: center;
-            margin-bottom: 10px;
-            opacity: 0.7;
-            font-size: 0.85rem;
-        }
-        
-        .hand-cards {
-            display: flex;
-            justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        
+        .hand-label { text-align: center; margin-bottom: 10px; opacity: 0.7; }
+        .hand-cards { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; }
         .hand-card {
             width: 80px;
             height: 108px;
@@ -355,24 +140,10 @@
             padding: 5px;
             position: relative;
             cursor: grab;
-            transition: transform 0.2s, box-shadow 0.2s;
             border: 2px solid #555;
-            user-select: none;
         }
-        
-        .hand-card:hover {
-            transform: translateY(-10px) scale(1.03);
-            border-color: #f39c12;
-            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.35);
-            z-index: 10;
-        }
-        
-        .hand-card.dragging {
-            opacity: 0.5;
-            cursor: grabbing;
-        }
-        
-        .hand-card .card-cost {
+        .hand-card:hover { transform: translateY(-10px); border-color: #f39c12; }
+        .card-cost {
             position: absolute;
             top: -4px;
             left: -4px;
@@ -387,82 +158,21 @@
             font-size: 0.75rem;
             border: 2px solid #fff;
         }
-        
-        .hand-card .card-art {
-            font-size: 1.8rem;
-            text-align: center;
-            margin: 6px 0;
-        }
-        
-        .hand-card .card-name {
-            font-size: 0.6rem;
-            text-align: center;
-            font-weight: bold;
-        }
-        
-        .hand-card .card-stats-inline {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 4px;
-            padding: 0 4px;
-        }
-        
-        .hand-card .attack {
-            color: #fff;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
-        
-        .hand-card .health {
-            color: #fff;
-            font-size: 0.7rem;
-            font-weight: bold;
-        }
-        
-        .hand-card .card-keywords {
-            display: flex;
-            justify-content: center;
-            gap: 2px;
-            margin-top: 3px;
-        }
-        
-        .hand-card .kw {
-            font-size: 0.4rem;
-            padding: 1px 3px;
-            background: rgba(243, 156, 18, 0.3);
-            border: 1px solid #f39c12;
-            border-radius: 3px;
-        }
-        
-        /* 控制按钮 */
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-top: 12px;
-        }
-        
-        .btn {
+        .card-art { font-size: 1.8rem; text-align: center; margin: 8px 0; }
+        .card-name { font-size: 0.6rem; text-align: center; font-weight: bold; }
+        .hand-stats { display: flex; justify-content: space-between; padding: 0 4px; margin-top: 4px; }
+        .hand-stats span { font-size: 0.7rem; font-weight: bold; }
+        .btn-restart {
             padding: 8px 20px;
-            border: none;
             border-radius: 18px;
             font-size: 0.85rem;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.3s;
-        }
-        
-        .btn-restart {
             background: linear-gradient(135deg, #27ae60, #2ecc71);
             color: #fff;
+            border: none;
+            margin-top: 12px;
         }
-        
-        .btn-restart:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
-        }
-        
-        /* 规则提示 */
         .rules {
             background: rgba(0,0,0,0.2);
             padding: 10px 12px;
@@ -470,180 +180,431 @@
             margin-top: 12px;
             font-size: 0.75rem;
         }
-        
-        .rules-title {
-            font-weight: bold;
-            margin-bottom: 6px;
-            color: #f39c12;
-        }
-        
-        .rules-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 6px;
-        }
-        
-        .rule-item {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        /* 消息显示 */
-        .game-message {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(0,0,0,0.85);
-            padding: 18px 35px;
-            border-radius: 12px;
-            font-size: 1.1rem;
-            font-weight: bold;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 200;
-            pointer-events: none;
-            text-align: center;
-        }
-        
-        .game-message.show {
-            opacity: 1;
-        }
-        
-        /* 响应式 */
-        @media (max-width: 500px) {
-            .hand-card {
-                width: 70px;
-                height: 98px;
-            }
-            
-            .hand-card .card-art {
-                font-size: 1.5rem;
-            }
-            
-            .field-slot {
-                height: 58px;
-            }
-            
-            .minion-art {
-                font-size: 1.2rem;
-            }
-        }
+        .rules-title { font-weight: bold; color: #f39c12; margin-bottom: 6px; }
     </style>
 </head>
 <body>
-    <!-- 导航 -->
     <nav class="nav">
-        <div class="logo">⚔️ Arena Legends</div>
+        <div class="logo">Arena Legends</div>
         <div class="nav-links">
-            <a href="index.html">🏠 首页</a>
-            <a href="game.html" class="active">🎮 即时对战</a>
-            <a href="multiplayer.html">🌐 实时PVP</a>
+            <a href="index.html">首页</a>
+            <a href="game.html">即时对战</a>
+            <a href="multiplayer.html">实时PVP</a>
         </div>
     </nav>
     
-    <!-- 游戏容器 -->
     <div class="game-container">
-        <!-- 顶部信息 -->
         <div class="top-bar">
             <div class="player-info">
                 <div class="avatar hero">👤</div>
-                <div class="player-stats">
-                    <div class="player-name">玩家</div>
-                    <div class="health-bar">
-                        <span class="health-value hero" id="playerHealth">30</span>
-                        <div class="health-bar-bg">
-                            <div class="health-bar-fill" id="playerHealthBar" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                </div>
+                <div>玩家 <span id="playerHealth" style="color:#e74c3c;font-weight:bold;">30</span></div>
             </div>
-            
             <div class="mana-display">
-                <span class="mana-icon">💎</span>
+                <span>💎</span>
                 <span class="mana-value" id="manaDisplay">4/10</span>
             </div>
-            
             <div class="player-info">
-                <div class="player-stats" style="text-align: right;">
-                    <div class="player-name">敌方</div>
-                    <div class="health-bar" style="flex-direction: row-reverse;">
-                        <span class="health-value enemy" id="enemyHealth">30</span>
-                        <div class="health-bar-bg">
-                            <div class="health-bar-fill" id="enemyHealthBar" style="width: 100%;"></div>
-                        </div>
-                    </div>
-                </div>
+                <div>敌方 <span id="enemyHealth" style="color:#e74c3c;font-weight:bold;">30</span></div>
                 <div class="avatar enemy">👹</div>
             </div>
         </div>
         
-        <!-- 战场 -->
         <div class="battlefield">
-            <!-- 敌方战场格子 -->
-            <div class="battle-grid enemy-grid" id="enemyFieldGrid">
-                <!-- 敌方格子 -->
-            </div>
-            
-            <!-- 中央信息 -->
-            <div class="center-info">
-                <div class="turn-info">⚔️ 随从攻击时会有动画</div>
-            </div>
-            
-            <!-- 玩家战场格子 -->
-            <div class="battle-grid player-grid" id="playerFieldGrid">
-                <!-- 玩家格子 -->
-            </div>
+            <div class="battle-grid" id="enemyFieldGrid"></div>
+            <div style="text-align:center;padding:10px;font-size:0.9rem;opacity:0.8;">⚔️ 随从攻击时会有动画</div>
+            <div class="battle-grid" id="playerFieldGrid"></div>
         </div>
         
-        <!-- 手牌 -->
         <div class="hand-area">
             <div class="hand-label">🎴 拖拽卡牌到战场格子</div>
-            <div class="hand-cards" id="handContainer">
-                <!-- 手牌 -->
-            </div>
+            <div class="hand-cards" id="handContainer"></div>
         </div>
         
-        <!-- 控制 -->
-        <div class="controls">
-            <button class="btn btn-restart" onclick="game.restart()">🔄 重新开始</button>
+        <div style="text-align:center;">
+            <button class="btn-restart" onclick="restartGame()">🔄 重新开始</button>
         </div>
         
-        <!-- 规则 -->
         <div class="rules">
             <div class="rules-title">📋 战斗规则</div>
-            <div class="rules-list">
-                <div class="rule-item">💎 每3.33秒+1圣水</div>
-                <div class="rule-item">📊 攻击进度条</div>
-                <div class="rule-item">💥 进度满攻击动画</div>
-                <div class="rule-item">🔵 己方蓝色/🔴 敌方红色</div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,150px);gap:6px;">
+                <div>💎 每3.33秒+1圣水</div>
+                <div>📊 攻击进度条</div>
+                <div>💥 进度满攻击动画</div>
+                <div>🔵 己方蓝色/🔴 敌方红色</div>
             </div>
         </div>
     </div>
-    
-    <!-- 消息 -->
-    <div class="game-message" id="gameMessage"></div>
-    
-    <script src="game.js"></script>
+
     <script>
-        // 设置格子事件
-        document.addEventListener('DOMContentLoaded', () => {
-            // 玩家格子拖拽
-            document.querySelectorAll('#playerFieldGrid .field-slot').forEach(slot => {
-                slot.addEventListener('dragover', e => e.preventDefault());
-                slot.addEventListener('dragenter', () => slot.classList.add('drag-over'));
-                slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
-                slot.addEventListener('drop', e => {
-                    e.preventDefault();
-                    slot.classList.remove('drag-over');
-                    const slotIndex = parseInt(slot.dataset.slot);
-                    game.placeCard(slotIndex);
-                });
+    // 游戏配置
+    const CONFIG = {
+        manaPerSecond: 0.3,
+        maxMana: 10,
+        attackInterval: 5000,
+        manaStart: 4
+    };
+    
+    // 游戏状态
+    let game = {
+        player: { mana: CONFIG.manaStart, health: 30, hand: [], field: [null,null,null,null,null,null], deck: [] },
+        enemy: { health: 30, field: [null,null,null,null,null,null] },
+        isRunning: true
+    };
+    
+    // 牌堆模板
+    const CARD_TEMPLATES = [
+        { name: '狼骑兵', cost: 3, attack: 4, health: 3, art: '🐺', keywords: ['冲锋'] },
+        { name: '火元素', cost: 4, attack: 5, health: 5, art: '🔥', keywords: [] },
+        { name: '冰霜骑士', cost: 5, attack: 6, health: 6, art: '🛡️', keywords: ['嘲讽'] },
+        { name: '精灵弓手', cost: 2, attack: 3, health: 2, art: '🏹', keywords: ['突袭'] },
+        { name: '治疗精灵', cost: 2, attack: 1, health: 4, art: '💚', keywords: ['战吼'] },
+        { name: '闪电箭', cost: 3, attack: 4, health: 2, art: '⚡', keywords: [] },
+        { name: '火龙', cost: 6, attack: 8, health: 7, art: '🐉', keywords: ['冲锋'] },
+        { name: '骷髅兵', cost: 1, attack: 2, health: 1, art: '💀', keywords: [] },
+        { name: '石巨人', cost: 4, attack: 4, health: 7, art: '🗿', keywords: ['嘲讽'] }
+    ];
+    
+    // 初始化游戏
+    function initGame() {
+        console.log('⚔️ Arena Legends 初始化...');
+        createDeck();
+        dealCards(4);
+        renderAll();
+        startGameLoop();
+        console.log('✅ 游戏启动成功!');
+    }
+    
+    // 创建牌堆
+    function createDeck() {
+        for (let i = 0; i < 15; i++) {
+            const template = CARD_TEMPLATES[i % CARD_TEMPLATES.length];
+            game.player.deck.push({
+                ...template,
+                id: 'card_' + Date.now() + '_' + i,
+                attackProgress: 0
             });
-        });
+        }
+    }
+    
+    // 发牌
+    function dealCards(count) {
+        for (let i = 0; i < count; i++) {
+            if (game.player.deck.length > 0 && game.player.hand.length < 7) {
+                game.player.hand.push(game.player.deck.pop());
+            }
+        }
+    }
+    
+    // 启动游戏循环
+    function startGameLoop() {
+        // 圣水恢复
+        setInterval(() => {
+            if (!game.isRunning) return;
+            if (game.player.mana < CONFIG.maxMana) {
+                game.player.mana = Math.min(game.player.mana + 1, CONFIG.maxMana);
+                document.getElementById('manaDisplay').textContent = game.player.mana + '/' + CONFIG.maxMana;
+            }
+        }, 3330);
         
-        console.log('⚔️ Arena Legends - 即时制战斗');
+        // 攻击进度
+        setInterval(() => {
+            if (!game.isRunning) return;
+            updateAttackProgress();
+        }, 100);
+        
+        // 敌方AI
+        setInterval(() => {
+            if (!game.isRunning) return;
+            enemyAI();
+        }, 4000);
+        
+        // 定时发牌
+        setInterval(() => {
+            if (!game.isRunning) return;
+            if (game.player.hand.length < 7) {
+                dealCards(1);
+                renderHand();
+            }
+        }, 12000);
+    }
+    
+    // 更新攻击进度
+    function updateAttackProgress() {
+        const perTick = 100 / (CONFIG.attackInterval / 100);
+        
+        for (let i = 0; i < 6; i++) {
+            const minion = game.player.field[i];
+            if (minion && minion.health > 0) {
+                minion.attackProgress = Math.min(minion.attackProgress + perTick, 100);
+                if (minion.attackProgress >= 100) {
+                    performAttack('player', i);
+                    return;
+                }
+            }
+        }
+        
+        for (let i = 0; i < 6; i++) {
+            const minion = game.enemy.field[i];
+            if (minion && minion.health > 0) {
+                minion.attackProgress = Math.min(minion.attackProgress + perTick, 100);
+                if (minion.attackProgress >= 100) {
+                    performAttack('enemy', i);
+                    return;
+                }
+            }
+        }
+        
+        updateProgressBars();
+    }
+    
+    // 执行攻击
+    function performAttack(side, index) {
+        const field = side === 'player' ? game.player.field : game.enemy.field;
+        const attacker = field[index];
+        if (!attacker || attacker.health <= 0) return;
+        
+        const targetField = side === 'player' ? game.enemy.field : game.player.field;
+        const targetIndex = index;
+        const target = targetField[targetIndex];
+        
+        // 播放动画
+        playAttackAnimation(side, index, targetIndex, () => {
+            if (target && target.health > 0) {
+                target.health -= attacker.attack;
+                attacker.health -= target.attack;
+                showMessage(attacker.name + ' ↔️ ' + target.name + '!');
+            } else {
+                if (side === 'player') game.enemy.health -= attacker.attack;
+                else game.player.health -= attacker.attack;
+                showMessage(attacker.name + ' 攻击英雄! -' + attacker.attack);
+            }
+            
+            if (attacker.health <= 0) field[index] = null;
+            if (target && target.health <= 0) targetField[targetIndex] = null;
+            
+            attacker.attackProgress = 0;
+            if (target) target.attackProgress = 0;
+            
+            renderAll();
+            updateHealthDisplay();
+            checkGameEnd();
+        });
+    }
+    
+    // 攻击动画
+    function playAttackAnimation(side, fromIdx, toIdx, callback) {
+        const fromEl = document.querySelector('#' + (side === 'player' ? 'playerFieldGrid' : 'enemyFieldGrid') + ' .field-slot[data-index="' + fromIdx + '"]');
+        if (!fromEl) { callback(); return; }
+        
+        const clone = fromEl.cloneNode(true);
+        const rect = fromEl.getBoundingClientRect();
+        clone.style.cssText = 'position:fixed;left:' + rect.left + 'px;top:' + rect.top + 'px;z-index:1000;pointer-events:none;transition:all 0.2s ease-in-out;';
+        document.body.appendChild(clone);
+        
+        const moveX = side === 'player' ? 50 : -50;
+        const moveY = side === 'player' ? 30 : -30;
+        
+        setTimeout(() => { clone.style.transform = 'translate(' + moveX + 'px,' + moveY + 'px) scale(1.2)'; }, 50);
+        setTimeout(() => { clone.style.transform = 'translate(0,0) scale(1)'; }, 300);
+        setTimeout(() => { clone.remove(); callback(); }, 500);
+    }
+    
+    // 敌方AI
+    function enemyAI() {
+        const emptySlots = game.enemy.field.map((s, i) => s === null ? i : -1).filter(i => i !== -1);
+        
+        if (emptySlots.length > 0 && Math.random() > 0.4) {
+            const slot = emptySlots[Math.floor(Math.random() * emptySlots.length)];
+            const enemies = [
+                { name: '敌方狼人', attack: 4, health: 3, art: '🐺' },
+                { name: '敌方火元素', attack: 5, health: 5, art: '🔥' },
+                { name: '敌方骷髅', attack: 2, health: 1, art: '💀' }
+            ];
+            const card = { ...enemies[Math.floor(Math.random() * enemies.length)], id: 'enemy_' + Date.now(), attackProgress: 0 };
+            game.enemy.field[slot] = card;
+            renderEnemyField();
+            showMessage('😈 敌方放置了 ' + card.name + '!');
+        }
+    }
+    
+    // 渲染所有
+    function renderAll() {
+        renderHand();
+        renderPlayerField();
+        renderEnemyField();
+        updateHealthDisplay();
+    }
+    
+    // 渲染手牌
+    function renderHand() {
+        const container = document.getElementById('handContainer');
+        if (!container) return;
+        
+        if (game.player.hand.length === 0) {
+            container.innerHTML = '<div style="padding:20px;opacity:0.6;">等待发牌...</div>';
+            return;
+        }
+        
+        container.innerHTML = game.player.hand.map((card, idx) => 
+            '<div class="hand-card" draggable="true" data-index="' + idx + '" data-id="' + card.id + '">' +
+            '<div class="card-cost">' + card.cost + '</div>' +
+            '<div class="card-art">' + card.art + '</div>' +
+            '<div class="card-name">' + card.name + '</div>' +
+            '<div class="hand-stats"><span style="color:#e74c3c;">⚔️' + card.attack + '</span><span style="color:#2ecc71;">❤️' + card.health + '</span></div>' +
+            '</div>'
+        ).join('');
+        
+        // 拖拽事件
+        container.querySelectorAll('.hand-card').forEach(el => {
+            el.addEventListener('dragstart', e => {
+                e.dataTransfer.setData('text/plain', el.dataset.index);
+                el.style.opacity = '0.5';
+            });
+            el.addEventListener('dragend', () => el.style.opacity = '1');
+        });
+    }
+    
+    // 渲染玩家战场
+    function renderPlayerField() {
+        const grid = document.getElementById('playerFieldGrid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        for (let i = 0; i < 6; i++) {
+            const minion = game.player.field[i];
+            const slot = document.createElement('div');
+            slot.className = 'field-slot';
+            slot.dataset.index = i;
+            
+            if (minion) {
+                slot.classList.add('player-minion');
+                slot.innerHTML = createMinionHTML(minion, 'player');
+            } else {
+                slot.innerHTML = '<span class="slot-label">' + getSlotLabel(i) + '</span>';
+            }
+            
+            // 放置事件
+            slot.addEventListener('dragover', e => e.preventDefault());
+            slot.addEventListener('drop', e => {
+                e.preventDefault();
+                const idx = parseInt(e.target.closest('.field-slot').dataset.index);
+                placeCard(idx);
+            });
+            
+            grid.appendChild(slot);
+        }
+    }
+    
+    // 渲染敌方战场
+    function renderEnemyField() {
+        const grid = document.getElementById('enemyFieldGrid');
+        if (!grid) return;
+        
+        grid.innerHTML = '';
+        for (let i = 0; i < 6; i++) {
+            const minion = game.enemy.field[i];
+            const slot = document.createElement('div');
+            slot.className = 'field-slot';
+            slot.dataset.index = i;
+            
+            if (minion) {
+                slot.classList.add('enemy-minion');
+                slot.innerHTML = createMinionHTML(minion, 'enemy');
+            } else {
+                slot.innerHTML = '<span class="slot-label">' + getSlotLabel(i) + '</span>';
+            }
+            
+            grid.appendChild(slot);
+        }
+    }
+    
+    // 创建随从HTML
+    function createMinionHTML(minion, side) {
+        return '<div class="minion-content">' +
+            '<div class="minion-art">' + minion.art + '</div>' +
+            '<div class="minion-name">' + minion.name + '</div>' +
+            '<div class="minion-stats"><span style="color:#fff;">⚔️' + minion.attack + '</span><span style="color:#fff;">❤️' + minion.health + '</span></div>' +
+            '<div class="attack-progress-bar"><div class="attack-progress-fill" style="width:' + (minion.attackProgress || 0) + '%"></div></div>' +
+            '</div>';
+    }
+    
+    // 更新进度条
+    function updateProgressBars() {
+        for (let i = 0; i < 6; i++) {
+            const minion = game.player.field[i];
+            const fill = document.querySelector('#playerFieldGrid .field-slot[data-index="' + i + '"] .attack-progress-fill');
+            if (fill && minion) fill.style.width = minion.attackProgress + '%';
+        }
+        for (let i = 0; i < 6; i++) {
+            const minion = game.enemy.field[i];
+            const fill = document.querySelector('#enemyFieldGrid .field-slot[data-index="' + i + '"] .attack-progress-fill');
+            if (fill && minion) fill.style.width = minion.attackProgress + '%';
+        }
+    }
+    
+    // 获取格子标签
+    function getSlotLabel(idx) {
+        return ['前左', '前中', '前右', '后左', '后中', '后右'][idx];
+    }
+    
+    // 放置卡牌
+    function placeCard(slotIdx) {
+        const cardIdx = parseInt(document.querySelector('.hand-card.dragging')?.dataset.index || 0);
+        const card = game.player.hand[cardIdx];
+        
+        if (!card) return;
+        if (card.cost > game.player.mana) { showMessage('💎 圣水不足!'); return; }
+        if (game.player.field[slotIdx]) { showMessage('⚠️ 该格子已有随从!'); return; }
+        
+        game.player.mana -= card.cost;
+        game.player.hand.splice(cardIdx, 1);
+        
+        game.player.field[slotIdx] = { ...card, attackProgress: 0 };
+        
+        document.getElementById('manaDisplay').textContent = game.player.mana + '/' + CONFIG.maxMana;
+        renderAll();
+        showMessage(card.name + ' -> ' + getSlotLabel(slotIdx) + '!');
+    }
+    
+    // 更新生命显示
+    function updateHealthDisplay() {
+        document.getElementById('playerHealth').textContent = Math.max(0, game.player.health);
+        document.getElementById('enemyHealth').textContent = Math.max(0, game.enemy.health);
+    }
+    
+    // 显示消息
+    function showMessage(msg) {
+        const el = document.createElement('div');
+        el.style.cssText = 'position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,0.85);padding:20px 40px;border-radius:15px;font-size:1.2rem;font-weight:bold;z-index:200;';
+        el.textContent = msg;
+        document.body.appendChild(el);
+        setTimeout(() => el.remove(), 2000);
+        console.log('💬 ' + msg);
+    }
+    
+    // 检查游戏结束
+    function checkGameEnd() {
+        if (game.player.health <= 0) {
+            game.isRunning = false;
+            showMessage('💀 你输了!');
+            setTimeout(() => alert('💀 游戏结束! 敌方获胜!'), 500);
+        } else if (game.enemy.health <= 0) {
+            game.isRunning = false;
+            showMessage('🎉 你赢了!');
+            setTimeout(() => alert('🎉 游戏结束! 你获胜!'), 500);
+        }
+    }
+    
+    // 重新开始
+    function restartGame() {
+        location.reload();
+    }
+    
+    // 启动
+    window.onload = function() {
+        console.log('📄 DOM加载完成');
+        initGame();
+    };
     </script>
 </body>
 </html>
