@@ -220,18 +220,20 @@
         
         /* 中央区域 */
         .center-area {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 15px;
         }
         
         .drop-zone {
-            width: 100px;
-            height: 100px;
+            width: 100%;
+            height: 80px;
             background: rgba(255,255,255,0.1);
             border: 3px dashed rgba(255,255,255,0.3);
-            border-radius: 15px;
+            border-radius: 12px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -247,13 +249,13 @@
         }
         
         .drop-zone .zone-icon {
-            font-size: 2rem;
-            margin-bottom: 5px;
+            font-size: 1.5rem;
+            margin-bottom: 3px;
         }
         
         .drop-zone .zone-label {
-            font-size: 0.75rem;
-            opacity: 0.7;
+            font-size: 0.7rem;
+            opacity: 0.8;
         }
         
         /* 我方区域 */
@@ -579,21 +581,31 @@
                 </div>
             </div>
             
-            <!-- 中央放置区 -->
-            <div class="center-area">
+            <!-- 中央放置区 - 2行x3列 -->
+            <div class="center-area" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; max-width: 500px; margin: 0 auto;">
                 <div class="drop-zone" data-zone="support">
                     <span class="zone-icon">🪄</span>
-                    <span class="zone-label">辅助区</span>
+                    <span class="zone-label">辅助</span>
                 </div>
-                
                 <div class="drop-zone" data-zone="tank">
                     <span class="zone-icon">🛡️</span>
-                    <span class="zone-label">坦克区</span>
+                    <span class="zone-label">坦克</span>
                 </div>
-                
                 <div class="drop-zone" data-zone="warrior">
                     <span class="zone-icon">⚔️</span>
-                    <span class="zone-label">战士区</span>
+                    <span class="zone-label">战士</span>
+                </div>
+                <div class="drop-zone" data-zone="ranged">
+                    <span class="zone-icon">🏹</span>
+                    <span class="zone-label">远程</span>
+                </div>
+                <div class="drop-zone" data-zone="center">
+                    <span class="zone-icon">⭐</span>
+                    <span class="zone-label">中央</span>
+                </div>
+                <div class="drop-zone" data-zone="assault">
+                    <span class="zone-icon">💨</span>
+                    <span class="zone-label">冲锋</span>
                 </div>
             </div>
             
