@@ -58,7 +58,7 @@
         
         /* 游戏容器 */
         .game-container {
-            max-width: 1200px;
+            max-width: 1100px;
             margin: 0 auto;
             padding: 10px;
         }
@@ -77,25 +77,27 @@
         .player-info {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 12px;
         }
         
         .avatar {
-            width: 45px;
-            height: 45px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.3rem;
+            font-size: 1.2rem;
         }
         
         .avatar.hero {
             background: linear-gradient(135deg, #3498db, #2980b9);
+            box-shadow: 0 0 15px rgba(52, 152, 219, 0.5);
         }
         
         .avatar.enemy {
-            background: linear-gradient(135deg, #8e44ad, #9b59b6);
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
         }
         
         .player-stats {
@@ -106,27 +108,26 @@
         
         .player-name {
             font-weight: bold;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
         }
         
         .health-bar {
             display: flex;
             align-items: center;
-            gap: 8px;
-        }
-        
-        .health-icon {
-            font-size: 1.1rem;
+            gap: 6px;
         }
         
         .health-value {
             font-weight: bold;
-            color: #e74c3c;
-            font-size: 1.1rem;
+            font-size: 1rem;
+            min-width: 35px;
         }
         
+        .health-value.hero { color: #3498db; }
+        .health-value.enemy { color: #e74c3c; }
+        
         .health-bar-bg {
-            width: 100px;
+            width: 80px;
             height: 8px;
             background: rgba(255,255,255,0.2);
             border-radius: 4px;
@@ -143,18 +144,19 @@
         .mana-display {
             display: flex;
             align-items: center;
-            gap: 8px;
-            background: rgba(52, 152, 219, 0.3);
-            padding: 8px 15px;
-            border-radius: 20px;
+            gap: 6px;
+            background: rgba(52, 152, 219, 0.25);
+            padding: 8px 14px;
+            border-radius: 18px;
+            border: 2px solid rgba(52, 152, 219, 0.5);
         }
         
         .mana-icon {
-            font-size: 1.3rem;
+            font-size: 1.2rem;
         }
         
         .mana-value {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
             color: #3498db;
         }
@@ -162,39 +164,31 @@
         /* 战场 */
         .battlefield {
             background: linear-gradient(180deg, 
-                #2c3e50 0%, 
-                #34495e 20%, 
-                #2ecc71 40%, 
-                #27ae60 60%, 
+                #1a1a2e 0%, 
+                #2c3e50 15%, 
+                #2ecc71 35%, 
+                #27ae60 65%, 
                 #1e8449 100%);
             border-radius: 15px;
-            padding: 15px;
-            min-height: 350px;
+            padding: 12px;
+            min-height: 320px;
             position: relative;
         }
         
-        /* 战场格子系统 */
+        /* 战场格子 */
         .battle-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            max-width: 500px;
+            gap: 8px;
+            max-width: 450px;
             margin: 0 auto;
         }
         
-        .enemy-grid {
-            margin-bottom: 15px;
-        }
-        
-        .player-grid {
-            margin-top: 15px;
-        }
-        
         .field-slot {
-            height: 70px;
-            background: rgba(255,255,255,0.08);
-            border: 2px dashed rgba(255,255,255,0.25);
-            border-radius: 10px;
+            height: 65px;
+            background: rgba(255,255,255,0.06);
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -205,58 +199,59 @@
         }
         
         .field-slot:hover {
-            background: rgba(243, 156, 18, 0.2);
-            border-color: #f39c12;
+            background: rgba(243, 156, 18, 0.15);
+            border-color: rgba(243, 156, 18, 0.5);
         }
         
         .field-slot.drag-over {
-            background: rgba(243, 156, 18, 0.4);
+            background: rgba(243, 156, 18, 0.3);
             border-color: #f39c12;
-            transform: scale(1.05);
+            transform: scale(1.03);
         }
         
         .field-slot.occupied {
-            background: linear-gradient(135deg, #c0392b, #e74c3c);
-            border: 2px solid #c0392b;
+            background: transparent;
+            border: none;
             cursor: default;
         }
         
-        .field-slot.occupied:hover {
-            transform: none;
-            background: linear-gradient(135deg, #c0392b, #e74c3c);
+        /* 己方随从 - 蓝色底 */
+        .field-slot.player-minion {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.4), rgba(41, 128, 185, 0.6));
+            border: 2px solid rgba(52, 152, 219, 0.8);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.3);
         }
         
-        .field-slot.enemy {
-            background: rgba(142, 68, 173, 0.2);
-            border-color: rgba(142, 68, 173, 0.4);
+        .field-slot.player-minion:hover {
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.5), rgba(41, 128, 185, 0.7));
         }
         
-        .field-slot.enemy.occupied {
-            background: linear-gradient(135deg, #8e44ad, #9b59b6);
-            border-color: #8e44ad;
+        /* 敌方随从 - 红色底 */
+        .field-slot.enemy-minion {
+            background: linear-gradient(135deg, rgba(231, 76, 60, 0.4), rgba(192, 57, 43, 0.6));
+            border: 2px solid rgba(231, 76, 60, 0.8);
+            box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
         }
         
         .slot-label {
-            font-size: 0.7rem;
-            opacity: 0.5;
+            font-size: 0.65rem;
+            opacity: 0.4;
         }
         
+        /* 随从内容 */
         .minion-content {
             text-align: center;
             padding: 3px;
-        }
-        
-        .minion-content.enemy {
-            opacity: 0.9;
+            width: 100%;
         }
         
         .minion-art {
-            font-size: 1.6rem;
+            font-size: 1.4rem;
         }
         
         .minion-name {
-            font-size: 0.6rem;
-            margin: 2px 0;
+            font-size: 0.55rem;
+            margin: 1px 0;
             opacity: 0.9;
         }
         
@@ -264,18 +259,45 @@
             display: flex;
             gap: 8px;
             justify-content: center;
-            font-size: 0.7rem;
+            font-size: 0.65rem;
             font-weight: bold;
         }
         
         .minion-stats .attack {
-            color: #e74c3c;
+            color: #fff;
+            text-shadow: 0 0 3px rgba(0,0,0,0.5);
         }
         
         .minion-stats .health {
-            color: #2ecc71;
+            color: #fff;
+            text-shadow: 0 0 3px rgba(0,0,0,0.5);
         }
         
+        /* 攻击进度条 */
+        .attack-progress-bar {
+            position: absolute;
+            bottom: 3px;
+            left: 5px;
+            right: 5px;
+            height: 4px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .attack-progress-bar.enemy {
+            background: rgba(0,0,0,0.4);
+        }
+        
+        .attack-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #f39c12, #e74c3c);
+            width: 0%;
+            transition: width 0.1s linear;
+            border-radius: 2px;
+        }
+        
+        /* 关键词标签 */
         .keywords {
             display: flex;
             gap: 2px;
@@ -284,8 +306,8 @@
         }
         
         .keywords .kw {
-            font-size: 0.5rem;
-            padding: 1px 4px;
+            font-size: 0.45rem;
+            padding: 1px 3px;
             background: rgba(255,255,255,0.2);
             border-radius: 3px;
         }
@@ -294,55 +316,43 @@
         .center-info {
             text-align: center;
             padding: 10px;
-            background: rgba(0,0,0,0.2);
-            border-radius: 8px;
             margin: 10px auto;
-            max-width: 400px;
+            max-width: 350px;
         }
         
-        .timer-bar {
-            height: 6px;
-            background: rgba(255,255,255,0.2);
-            border-radius: 3px;
-            margin-top: 8px;
-            overflow: hidden;
-        }
-        
-        .timer-fill {
-            height: 100%;
-            background: linear-gradient(90deg, #f39c12, #e74c3c);
-            width: 0%;
-            transition: width 0.5s;
+        .turn-info {
+            font-size: 0.9rem;
+            opacity: 0.8;
         }
         
         /* 手牌区 */
         .hand-area {
-            background: rgba(0,0,0,0.35);
-            padding: 15px;
+            background: rgba(0,0,0,0.3);
+            padding: 12px;
             border-radius: 12px;
             margin-top: 10px;
         }
         
         .hand-label {
             text-align: center;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
             opacity: 0.7;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
         }
         
         .hand-cards {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             flex-wrap: wrap;
         }
         
         .hand-card {
-            width: 90px;
-            height: 120px;
+            width: 80px;
+            height: 108px;
             background: linear-gradient(180deg, #2c3e50, #34495e);
-            border-radius: 10px;
-            padding: 6px;
+            border-radius: 8px;
+            padding: 5px;
             position: relative;
             cursor: grab;
             transition: transform 0.2s, box-shadow 0.2s;
@@ -351,9 +361,9 @@
         }
         
         .hand-card:hover {
-            transform: translateY(-12px) scale(1.05);
+            transform: translateY(-10px) scale(1.03);
             border-color: #f39c12;
-            box-shadow: 0 12px 35px rgba(243, 156, 18, 0.35);
+            box-shadow: 0 10px 30px rgba(243, 156, 18, 0.35);
             z-index: 10;
         }
         
@@ -364,28 +374,28 @@
         
         .hand-card .card-cost {
             position: absolute;
-            top: -6px;
-            left: -6px;
-            width: 24px;
-            height: 24px;
+            top: -4px;
+            left: -4px;
+            width: 22px;
+            height: 22px;
             background: linear-gradient(135deg, #3498db, #2980b9);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             border: 2px solid #fff;
         }
         
         .hand-card .card-art {
-            font-size: 2rem;
+            font-size: 1.8rem;
             text-align: center;
-            margin: 8px 0;
+            margin: 6px 0;
         }
         
         .hand-card .card-name {
-            font-size: 0.65rem;
+            font-size: 0.6rem;
             text-align: center;
             font-weight: bold;
         }
@@ -393,19 +403,19 @@
         .hand-card .card-stats-inline {
             display: flex;
             justify-content: space-between;
-            margin-top: 5px;
-            padding: 0 5px;
+            margin-top: 4px;
+            padding: 0 4px;
         }
         
         .hand-card .attack {
-            color: #e74c3c;
-            font-size: 0.75rem;
+            color: #fff;
+            font-size: 0.7rem;
             font-weight: bold;
         }
         
         .hand-card .health {
-            color: #2ecc71;
-            font-size: 0.75rem;
+            color: #fff;
+            font-size: 0.7rem;
             font-weight: bold;
         }
         
@@ -413,11 +423,11 @@
             display: flex;
             justify-content: center;
             gap: 2px;
-            margin-top: 4px;
+            margin-top: 3px;
         }
         
         .hand-card .kw {
-            font-size: 0.45rem;
+            font-size: 0.4rem;
             padding: 1px 3px;
             background: rgba(243, 156, 18, 0.3);
             border: 1px solid #f39c12;
@@ -428,15 +438,15 @@
         .controls {
             display: flex;
             justify-content: center;
-            gap: 15px;
-            margin-top: 15px;
+            gap: 12px;
+            margin-top: 12px;
         }
         
         .btn {
-            padding: 10px 25px;
+            padding: 8px 20px;
             border: none;
-            border-radius: 20px;
-            font-size: 0.9rem;
+            border-radius: 18px;
+            font-size: 0.85rem;
             font-weight: bold;
             cursor: pointer;
             transition: all 0.3s;
@@ -449,7 +459,34 @@
         
         .btn-restart:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.4);
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4);
+        }
+        
+        /* 规则提示 */
+        .rules {
+            background: rgba(0,0,0,0.2);
+            padding: 10px 12px;
+            border-radius: 10px;
+            margin-top: 12px;
+            font-size: 0.75rem;
+        }
+        
+        .rules-title {
+            font-weight: bold;
+            margin-bottom: 6px;
+            color: #f39c12;
+        }
+        
+        .rules-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 6px;
+        }
+        
+        .rule-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
         }
         
         /* 消息显示 */
@@ -459,9 +496,9 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background: rgba(0,0,0,0.85);
-            padding: 20px 40px;
-            border-radius: 15px;
-            font-size: 1.3rem;
+            padding: 18px 35px;
+            border-radius: 12px;
+            font-size: 1.1rem;
             font-weight: bold;
             opacity: 0;
             transition: opacity 0.3s;
@@ -474,61 +511,23 @@
             opacity: 1;
         }
         
-        /* 规则提示 */
-        .rules {
-            background: rgba(0,0,0,0.2);
-            padding: 12px 15px;
-            border-radius: 10px;
-            margin-top: 15px;
-            font-size: 0.8rem;
-            opacity: 0.7;
-        }
-        
-        .rules-title {
-            font-weight: bold;
-            margin-bottom: 8px;
-            color: #f39c12;
-        }
-        
-        .rules-list {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 8px;
-        }
-        
-        .rule-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        /* 动画 */
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-        
-        .attack-timer {
-            animation: pulse 1s infinite;
-        }
-        
         /* 响应式 */
-        @media (max-width: 600px) {
+        @media (max-width: 500px) {
             .hand-card {
-                width: 75px;
-                height: 105px;
+                width: 70px;
+                height: 98px;
             }
             
             .hand-card .card-art {
-                font-size: 1.6rem;
+                font-size: 1.5rem;
             }
             
             .field-slot {
-                height: 60px;
+                height: 58px;
             }
             
             .minion-art {
-                font-size: 1.3rem;
+                font-size: 1.2rem;
             }
         }
     </style>
@@ -553,8 +552,7 @@
                 <div class="player-stats">
                     <div class="player-name">玩家</div>
                     <div class="health-bar">
-                        <span class="health-icon">❤️</span>
-                        <span class="health-value" id="playerHealth">30</span>
+                        <span class="health-value hero" id="playerHealth">30</span>
                         <div class="health-bar-bg">
                             <div class="health-bar-fill" id="playerHealthBar" style="width: 100%;"></div>
                         </div>
@@ -564,15 +562,17 @@
             
             <div class="mana-display">
                 <span class="mana-icon">💎</span>
-                <span class="mana-value" id="manaDisplay">5/10</span>
+                <span class="mana-value" id="manaDisplay">4/10</span>
             </div>
             
             <div class="player-info">
                 <div class="player-stats" style="text-align: right;">
                     <div class="player-name">敌方</div>
                     <div class="health-bar" style="flex-direction: row-reverse;">
-                        <span class="health-icon">❤️</span>
-                        <span class="health-value" id="enemyHealth">30</span>
+                        <span class="health-value enemy" id="enemyHealth">30</span>
+                        <div class="health-bar-bg">
+                            <div class="health-bar-fill" id="enemyHealthBar" style="width: 100%;"></div>
+                        </div>
                     </div>
                 </div>
                 <div class="avatar enemy">👹</div>
@@ -580,23 +580,20 @@
         </div>
         
         <!-- 战场 -->
-        <div class="battlefield" id="battlefield">
+        <div class="battlefield">
             <!-- 敌方战场格子 -->
             <div class="battle-grid enemy-grid" id="enemyFieldGrid">
-                <!-- 敌方格子渲染在这里 -->
+                <!-- 敌方格子 -->
             </div>
             
             <!-- 中央信息 -->
             <div class="center-info">
-                <div>⚔️ <span id="turnInfo">即时制战斗</span></div>
-                <div class="timer-bar">
-                    <div class="timer-fill" id="timerFill" style="width: 0%;"></div>
-                </div>
+                <div class="turn-info">⚔️ 随从攻击时会有动画</div>
             </div>
             
             <!-- 玩家战场格子 -->
             <div class="battle-grid player-grid" id="playerFieldGrid">
-                <!-- 玩家格子渲染在这里 -->
+                <!-- 玩家格子 -->
             </div>
         </div>
         
@@ -604,7 +601,7 @@
         <div class="hand-area">
             <div class="hand-label">🎴 拖拽卡牌到战场格子</div>
             <div class="hand-cards" id="handContainer">
-                <!-- 手牌渲染在这里 -->
+                <!-- 手牌 -->
             </div>
         </div>
         
@@ -613,25 +610,40 @@
             <button class="btn btn-restart" onclick="game.restart()">🔄 重新开始</button>
         </div>
         
-        <!-- 规则提示 -->
+        <!-- 规则 -->
         <div class="rules">
             <div class="rules-title">📋 战斗规则</div>
             <div class="rules-list">
-                <div class="rule-item">💎 每秒恢复1圣水</div>
-                <div class="rule-item">⚔️ 每10秒自动攻击</div>
-                <div class="rule-item">🎯 正前方优先攻击</div>
-                <div class="rule-item">💀 血量归零出局</div>
+                <div class="rule-item">💎 每3.33秒+1圣水</div>
+                <div class="rule-item">📊 攻击进度条</div>
+                <div class="rule-item">💥 进度满攻击动画</div>
+                <div class="rule-item">🔵 己方蓝色/🔴 敌方红色</div>
             </div>
         </div>
     </div>
     
-    <!-- 消息显示 -->
+    <!-- 消息 -->
     <div class="game-message" id="gameMessage"></div>
     
     <script src="game.js"></script>
     <script>
+        // 设置格子事件
+        document.addEventListener('DOMContentLoaded', () => {
+            // 玩家格子拖拽
+            document.querySelectorAll('#playerFieldGrid .field-slot').forEach(slot => {
+                slot.addEventListener('dragover', e => e.preventDefault());
+                slot.addEventListener('dragenter', () => slot.classList.add('drag-over'));
+                slot.addEventListener('dragleave', () => slot.classList.remove('drag-over'));
+                slot.addEventListener('drop', e => {
+                    e.preventDefault();
+                    slot.classList.remove('drag-over');
+                    const slotIndex = parseInt(slot.dataset.slot);
+                    game.placeCard(slotIndex);
+                });
+            });
+        });
+        
         console.log('⚔️ Arena Legends - 即时制战斗');
-        console.log('💡 规则: 拖拽出牌 -> 随从自动攻击 -> 击败敌方!');
     </script>
 </body>
 </html>
